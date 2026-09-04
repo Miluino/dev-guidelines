@@ -1,0 +1,36 @@
+{
+  "organization": "Miluino",
+  "common": [
+    {
+      "name": "dev-guidelines",
+      "url": "https://github.com/Miluino/dev-guidelines.git",
+      "directory": "dev-guidelines"
+    }
+  ],
+  "teams": {
+    "firmware_team": [
+      {
+      "name": "mdr1986",
+      "url": "https://github.com/Miluino/mdr1986.git",
+      "directory": "platforms/mdr1986"
+      },
+      {
+      "name": "Miluino_MA1_StudyKit_firmware",
+      "url": "https://github.com/Miluino/Miluino_MA1_StudyKit_firmware.git",
+      "directory": "kits/Miluino_MA1_StudyKit/firmware"
+      }
+    ],
+    "hardware_team": [
+      {
+      "name": "Miluino_MA1_hardware",
+      "url": "https://github.com/Miluino/Miluino_MA1_hardware.git",
+      "directory": "boards/Miluino_MA1/hardware"
+      },
+      {
+      "name": "Miluino_MA1_StudyKit_hardware",
+      "url": "https://github.com/Miluino/Miluino_MA1_StudyKit_hardware.git",
+      "directory": "kits/Miluino_MA1_StudyKit/hardware"
+      }
+    }
+  }
+}
