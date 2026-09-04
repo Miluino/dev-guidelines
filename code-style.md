@@ -1,5 +1,13 @@
 # Стиль кода для разработчиков
 
+## Содержание
+
+- [Общие правила](#общие-правила)
+- [Профиль библиотек для микроконтроллеров](#профиль-библиотек-для-микроконтроллеров)
+- [Профиль прикладного кода прошивки](#профиль-прикладного-кода-прошивки)
+- [Профиль Python](#профиль-python)
+- [Локальные дополнения](#локальные-дополнения)
+
 ## Общие правила
 
 - Профиль выбирается по назначению кода, а не только по языку или расширению
@@ -262,7 +270,7 @@ typedef struct
 
 ### Функции и Doxygen
 
-В качестве введения в синтаксис, команды и группировку см. статью [«Документируем код эффективно при помощи Doxygen»](https://habr.com/ru/articles/252101/?ysclid=mtmwxk7hc0487581998).
+В качестве введения в синтаксис, команды и группировку см. статью [«Документируем код эффективно при помощи Doxygen»](https://habr.com/ru/articles/252101).
 
 - Публичная функция выполняет одну операцию и начинается с префикса модуля.
 - Парные операции называются симметрично: `Enable` / `Disable`,
@@ -467,6 +475,37 @@ firmware/
 - Не смешивайте объявления и выполняемый код в одной строке; тело `if`, `for`
   или `while` всегда заключается в фигурные скобки.
 
+Пример форматирования C-кода:
+
+```c
+/**
+ * @brief   Processes sensor samples and updates the current average.
+ * @param   context       Sensor processing context.
+ * @param   samples       Input samples.
+ * @param   sample_count  Number of input samples.
+ * @return  Processing status.
+ */
+sensor_status_t sensor_process(sensor_context_t *context,
+							   const uint16_t *samples,
+							   size_t sample_count){
+	if ((context == NULL)
+		|| (samples == NULL)
+		|| (sample_count == 0U))
+	{
+		return SENSOR_STATUS_INVALID_ARGUMENT;
+	}
+
+	uint32_t sample_sum = 0U;
+
+	for (size_t index = 0U; index < sample_count; ++index){
+		sample_sum += samples[index];
+	}
+
+	context->average = sample_sum / sample_count;
+	return SENSOR_STATUS_OK;
+}
+```
+
 ### Пользовательский код на C++
 
 #### Структура файлов C++
@@ -598,6 +637,34 @@ void process_byte(uint8_t byte);
 - Между смысловыми стадиями функции оставляется пустая строка. Несколько
   действий не сжимаются в одну строку.
 - В C++ используются именованные casts; C-style cast в новом коде запрещён.
+
+Пример форматирования C++-кода:
+
+```cpp
+/**
+ * @brief   Reads and scales one sensor value.
+ * @param   request   Read parameters.
+ * @param   response  Destination for the processed value.
+ * @return  `true` when the value has been processed successfully.
+ */
+bool SensorController::process(
+	const ReadRequest& request,
+	ReadResponse* response) {
+	
+	if (response == nullptr) {
+		return false;
+	}
+
+	const auto raw_value = peripheral_.read(request.channel);
+	const auto scaled_value = static_cast<float>(raw_value)
+		* request.scale;
+
+	response->value = filter_.apply(scaled_value);
+	response->valid = true;
+
+	return true;
+}
+```
 
 ### Ограничения embedded-кода
 
@@ -789,7 +856,6 @@ async def send_command(command: bytes, timeout: float) -> bool:
 
 ### Форматирование и асинхронный код
 
-- Каждый уровень отступа оформляется одним TAB по общим правилам документа.
 - Строковые литералы по умолчанию используют одинарные кавычки, docstring —
   тройные двойные. В существующем модуле сохраняется выбранный стиль.
 - Длинные сигнатуры и вызовы переносятся в скобках. В многострочном вызове
