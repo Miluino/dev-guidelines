@@ -29,6 +29,7 @@ function ConvertTo-NormalizedGitUrl {
 function Add-RepositoriesToSet {
     param(
         [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
         [System.Collections.Generic.List[object]]$Target,
 
         [Parameter(Mandatory)]
@@ -80,7 +81,7 @@ function Invoke-RepositoryClone {
     }
 
     if ($ScriptCommand.ShouldProcess($targetPath, "Clone repository '$($Repository.name)'")) {
-        $targetParentPath = Split-Path -LiteralPath $targetPath -Parent
+        $targetParentPath = [System.IO.Path]::GetDirectoryName($targetPath)
         if (-not (Test-Path -LiteralPath $targetParentPath)) {
             New-Item -ItemType Directory -Path $targetParentPath -Force | Out-Null
         }
