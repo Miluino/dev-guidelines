@@ -1,36 +1,73 @@
 {
   "organization": "Miluino",
-  "common": [
+  "repositories": [
     {
       "name": "dev-guidelines",
+      "description": "Правила и инструкции для разработчиков",
       "url": "https://github.com/Miluino/dev-guidelines.git",
-      "directory": "dev-guidelines"
-    }
-  ],
-  "teams": {
-    "firmware_team": [
-      {
+      "directory": "dev-guidelines",
+      "bootstrap": {
+        "common": true,
+        "teams": []
+      }
+    },
+    {
       "name": "mdr1986",
+      "description": "Кодовая база библиотеки mdr1986-periph",
       "url": "https://github.com/Miluino/mdr1986.git",
-      "directory": "platforms/mdr1986"
-      },
-      {
+      "directory": "platforms/mdr1986",
+      "bootstrap": {
+        "common": false,
+        "teams": [
+          "firmware_team"
+        ]
+      }
+    },
+    {
       "name": "Miluino_MA1_StudyKit_firmware",
+      "description": "Кодовая база для работы с шилдами Miluino MA1",
       "url": "https://github.com/Miluino/Miluino_MA1_StudyKit_firmware.git",
-      "directory": "kits/Miluino_MA1_StudyKit/firmware"
+      "directory": "kits/Miluino_MA1_StudyKit/firmware",
+      "bootstrap": {
+        "common": false,
+        "teams": [
+          "firmware_team"
+        ]
       }
-    ],
-    "hardware_team": [
-      {
+    },
+    {
       "name": "Miluino_MA1_hardware",
+      "description": "Схемы и печатные платы Miluino MA1",
       "url": "https://github.com/Miluino/Miluino_MA1_hardware.git",
-      "directory": "boards/Miluino_MA1/hardware"
-      },
-      {
-      "name": "Miluino_MA1_StudyKit_hardware",
-      "url": "https://github.com/Miluino/Miluino_MA1_StudyKit_hardware.git",
-      "directory": "kits/Miluino_MA1_StudyKit/hardware"
+      "directory": "boards/Miluino_MA1/hardware",
+      "bootstrap": {
+        "common": false,
+        "teams": [
+          "hardware_team"
+        ]
       }
-    ]
-  }
+    },
+    {
+      "name": "Miluino_MA1_StudyKit_hardware",
+      "description": "Схемы и печатные платы учебного комплекта Miluino MA1",
+      "url": "https://github.com/Miluino/Miluino_MA1_StudyKit_hardware.git",
+      "directory": "kits/Miluino_MA1_StudyKit/hardware",
+      "bootstrap": {
+        "common": false,
+        "teams": [
+          "hardware_team"
+        ]
+      }
+    },
+    {
+      "name": ".github",
+      "description": "Общие настройки и инструкции GitHub организации",
+      "url": "https://github.com/Miluino/.github.git",
+      "directory": ".github",
+      "bootstrap": {
+        "common": false,
+        "teams": []
+      }
+    }
+  ]
 }

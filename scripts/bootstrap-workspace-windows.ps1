@@ -26,23 +26,6 @@ function ConvertTo-NormalizedGitUrl {
     return $normalizedUrl.ToLowerInvariant()
 }
 
-function Add-RepositoriesToSet {
-    param(
-        [Parameter(Mandatory)]
-        [AllowEmptyCollection()]
-        [System.Collections.Generic.List[object]]$Target,
-
-        [Parameter(Mandatory)]
-        [object[]]$Repositories
-    )
-
-    foreach ($repository in $Repositories) {
-        if (-not ($Target | Where-Object { $_.name -eq $repository.name })) {
-            $Target.Add($repository)
-        }
-    }
-}
-
 function Invoke-RepositoryClone {
     param(
         [Parameter(Mandatory)]
@@ -102,7 +85,11 @@ if (-not (Test-Path -LiteralPath $ConfigPath -PathType Leaf)) {
 }
 
 $config = Get-Content -LiteralPath $ConfigPath -Raw -Encoding utf8 | ConvertFrom-Json
-$availableTeams = @($config.teams.PSObject.Properties.Name)
+$availableTeams = @(
+    $config.repositories |
+        ForEach-Object { @($_.bootstrap.teams) } |
+        Sort-Object -Unique
+)
 
 if ($Team -ne 'all' -and $Team -notin $availableTeams) {
     throw "Unknown team '$Team'. Available values: $($availableTeams -join ', '), all."
@@ -118,17 +105,14 @@ if (-not (Test-Path -LiteralPath $workspacePath)) {
     }
 }
 
-$repositories = [System.Collections.Generic.List[object]]::new()
-Add-RepositoriesToSet -Target $repositories -Repositories @($config.common)
-
-if ($Team -eq 'all') {
-    foreach ($teamProperty in $config.teams.PSObject.Properties) {
-        Add-RepositoriesToSet -Target $repositories -Repositories @($teamProperty.Value)
+$repositories = @(
+    $config.repositories | Where-Object {
+        $repositoryTeams = @($_.bootstrap.teams)
+        $_.bootstrap.common -or
+            (($Team -eq 'all') -and ($repositoryTeams.Count -gt 0)) -or
+            ($Team -in $repositoryTeams)
     }
-}
-else {
-    Add-RepositoriesToSet -Target $repositories -Repositories @($config.teams.$Team)
-}
+)
 
 Write-Host "Workspace: $workspacePath"
 Write-Host "Selected team: $Team"

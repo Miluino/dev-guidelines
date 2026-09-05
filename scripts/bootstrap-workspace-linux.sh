@@ -120,8 +120,9 @@ command -v jq >/dev/null 2>&1 || fail "jq was not found in PATH."
 [[ -f "$CONFIG_PATH" ]] || fail "Configuration file was not found: $CONFIG_PATH"
 jq -e . "$CONFIG_PATH" >/dev/null || fail "Configuration file contains invalid JSON: $CONFIG_PATH"
 
-if [[ "$TEAM" != "all" ]] && ! jq -e --arg team "$TEAM" '.teams | has($team)' "$CONFIG_PATH" >/dev/null; then
-    available_teams="$(jq -r '.teams | keys | join(", ")' "$CONFIG_PATH")"
+if [[ "$TEAM" != "all" ]] && ! jq -e --arg team "$TEAM" \
+    '[.repositories[].bootstrap.teams[]] | index($team) != null' "$CONFIG_PATH" >/dev/null; then
+    available_teams="$(jq -r '[.repositories[].bootstrap.teams[]] | unique | join(", ")' "$CONFIG_PATH")"
     fail "Unknown team '$TEAM'. Available values: $available_teams, all."
 fi
 
@@ -134,9 +135,9 @@ if [[ ! -d "$WORKSPACE_ROOT" ]]; then
 fi
 
 if [[ "$TEAM" == "all" ]]; then
-    repositories_filter='[.common[], (.teams | to_entries[] | .value[])] | unique_by(.name)[]'
+    repositories_filter='.repositories[] | select(.bootstrap.common == true or (.bootstrap.teams | length > 0))'
 else
-    repositories_filter='[.common[], .teams[$team][]] | unique_by(.name)[]'
+    repositories_filter='.repositories[] | select(.bootstrap.common == true or (.bootstrap.teams | index($team) != null))'
 fi
 
 echo "Workspace: $WORKSPACE_ROOT"
