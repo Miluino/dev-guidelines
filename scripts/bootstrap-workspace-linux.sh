@@ -12,20 +12,20 @@ WHAT_IF=false
 
 print_usage() {
     cat <<'EOF'
-Использование:
-  bash bootstrap-workspace-linux.sh --team <firmware_team|hardware_team|all> [параметры]
+Usage:
+  bash bootstrap-workspace-linux.sh --team <firmware_team|hardware_team|all> [options]
 
-Параметры:
-  --team, -t             Набор репозиториев команды.
-  --workspace-root, -w   Корневой каталог рабочей области.
-  --config, -c           Путь к файлу repositories.json.
-  --what-if, -n          Вывести план действий без изменений.
-  --help, -h             Показать эту справку.
+Options:
+  --team, -t             Team repository set.
+  --workspace-root, -w   Workspace root directory.
+  --config, -c           Path to repositories.json.
+  --what-if, -n          Print planned actions without changes.
+  --help, -h             Show this help message.
 EOF
 }
 
 fail() {
-    echo "Ошибка: $1" >&2
+    echo "Error: $1" >&2
     exit 1
 }
 
@@ -54,28 +54,28 @@ clone_repository() {
 
     if [[ -e "$target_path" ]]; then
         if [[ ! -d "$target_path" ]]; then
-            echo "Предупреждение: пропуск '$name': '$target_path' существует, но не является каталогом." >&2
+            echo "Warning: skipping '$name': '$target_path' exists but is not a directory." >&2
             return
         fi
 
         local remote_url
         remote_url="$(git -C "$target_path" config --get remote.origin.url 2>/dev/null || true)"
         if [[ -z "$remote_url" ]]; then
-            echo "Предупреждение: пропуск '$name': '$target_path' не является Git-репозиторием с remote 'origin'." >&2
+            echo "Warning: skipping '$name': '$target_path' is not a Git repository with an 'origin' remote." >&2
             return
         fi
 
         if [[ "$(normalize_git_url "$remote_url")" == "$(normalize_git_url "$url")" ]]; then
-            echo "Уже клонирован: $name"
+            echo "Already cloned: $name"
             return
         fi
 
-        echo "Предупреждение: пропуск '$name': каталог '$target_path' привязан к другому remote: $remote_url" >&2
+        echo "Warning: skipping '$name': '$target_path' has a different remote: $remote_url" >&2
         return
     fi
 
     if [[ "$WHAT_IF" == true ]]; then
-        echo "Будет клонирован: $name -> $target_path"
+        echo "Will clone: $name -> $target_path"
         return
     fi
 
@@ -86,17 +86,17 @@ clone_repository() {
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --team|-t)
-            [[ $# -ge 2 ]] || fail "Для параметра '$1' требуется значение."
+            [[ $# -ge 2 ]] || fail "Option '$1' requires a value."
             TEAM="$2"
             shift 2
             ;;
         --workspace-root|-w)
-            [[ $# -ge 2 ]] || fail "Для параметра '$1' требуется значение."
+            [[ $# -ge 2 ]] || fail "Option '$1' requires a value."
             WORKSPACE_ROOT="$2"
             shift 2
             ;;
         --config|-c)
-            [[ $# -ge 2 ]] || fail "Для параметра '$1' требуется значение."
+            [[ $# -ge 2 ]] || fail "Option '$1' requires a value."
             CONFIG_PATH="$2"
             shift 2
             ;;
@@ -109,25 +109,25 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         *)
-            fail "Неизвестный параметр '$1'. Используйте --help для справки."
+            fail "Unknown option '$1'. Use --help for usage information."
             ;;
     esac
 done
 
-[[ -n "$TEAM" ]] || fail "Укажите команду через --team."
-command -v git >/dev/null 2>&1 || fail "Git не найден в PATH."
-command -v jq >/dev/null 2>&1 || fail "jq не найден в PATH."
-[[ -f "$CONFIG_PATH" ]] || fail "Файл конфигурации не найден: $CONFIG_PATH"
-jq -e . "$CONFIG_PATH" >/dev/null || fail "Файл конфигурации содержит некорректный JSON: $CONFIG_PATH"
+[[ -n "$TEAM" ]] || fail "Specify a team with --team."
+command -v git >/dev/null 2>&1 || fail "Git was not found in PATH."
+command -v jq >/dev/null 2>&1 || fail "jq was not found in PATH."
+[[ -f "$CONFIG_PATH" ]] || fail "Configuration file was not found: $CONFIG_PATH"
+jq -e . "$CONFIG_PATH" >/dev/null || fail "Configuration file contains invalid JSON: $CONFIG_PATH"
 
 if [[ "$TEAM" != "all" ]] && ! jq -e --arg team "$TEAM" '.teams | has($team)' "$CONFIG_PATH" >/dev/null; then
     available_teams="$(jq -r '.teams | keys | join(", ")' "$CONFIG_PATH")"
-    fail "Неизвестная команда '$TEAM'. Доступные значения: $available_teams, all."
+    fail "Unknown team '$TEAM'. Available values: $available_teams, all."
 fi
 
 if [[ ! -d "$WORKSPACE_ROOT" ]]; then
     if [[ "$WHAT_IF" == true ]]; then
-        echo "Будет создан корневой каталог рабочей области: $WORKSPACE_ROOT"
+        echo "Will create workspace root directory: $WORKSPACE_ROOT"
     else
         mkdir -p "$WORKSPACE_ROOT"
     fi
@@ -139,8 +139,8 @@ else
     repositories_filter='[.common[], .teams[$team][]] | unique_by(.name)[]'
 fi
 
-echo "Рабочая область: $WORKSPACE_ROOT"
-echo "Выбранная команда: $TEAM"
+echo "Workspace: $WORKSPACE_ROOT"
+echo "Selected team: $TEAM"
 
 while IFS=$'\t' read -r name url directory; do
     clone_repository "$name" "$url" "$directory"
